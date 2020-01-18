@@ -17,14 +17,25 @@ variables:
 steps:
 - task: NuGetToolInstaller@1
 
-- task: NuGetCommand@2
+- task: Restore NuGetCommand@2
   inputs:
     restoreSolution: '$(solution)'
 
-- task: VSBuild@1
+- task: VSBuild@3
   inputs:
     solution: '$(solution)'
     msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="- task: CopyFiles@2
+
+- task: VSTest@2
+  displayName: 'Test assemblies'
+  inputs:
+    testAssemblyVer2: |
+     **\$(BuildConfiguration)\*unittest*.dll
+     !**\obj\**
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+
+- task: CopyFunctionalTestScripts@6
   inputs:
     SourceFolder: '$(agent.builddirectory)'
     Contents: |
@@ -36,7 +47,19 @@ steps:
       flattenFolders:true
       preserveTimestamp:true
 
+- task: CopyARMTemplates@7
+  inputs:
+    SourceFolder: '$(agent.builddirectory)'
+    Contents: |
+      **\*.runsettings
+      **\*FunctionalTest*\**\bin\$(BuildConfiguration)\**
+    TargetFolder:'$(Build.ArtifactStagingDirectory)\FunctionalTests'
+      CleanTargetFolder:false
+      OverWrite:true
+      flattenFolders:true
+      preserveTimestamp:true
+
 - task: VSTest@2
   inputs:
     platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+    configuration: '$(buildConfiguration)'      
