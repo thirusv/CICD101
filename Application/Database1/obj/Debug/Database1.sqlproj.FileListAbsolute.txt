@@ -1,0 +1,6 @@
+D:\Thiru\HandsOn\DevOps\Application\Database1\bin\Debug\Database1.dacpac
+D:\Thiru\HandsOn\DevOps\Application\Database1\bin\Debug\Database1.dll
+D:\Thiru\HandsOn\DevOps\Application\Database1\bin\Debug\Database1.pdb
+D:\Thiru\HandsOn\DevOps\Application\Database1\obj\Debug\Database1.sqlprojAssemblyReference.cache
+D:\Thiru\HandsOn\DevOps\Application\Database1\obj\Debug\Database1.dll
+D:\Thiru\HandsOn\DevOps\Application\Database1\obj\Debug\Database1.pdb
