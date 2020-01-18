@@ -1,10 +1,69 @@
+trigger:
+- master
+
+pool:
+  vmImage: vs2017-win2016 
+
+steps:
 - task: NuGetToolInstaller@1
   inputs:
-    versionSpec:'5.0.0'
-    
-- task:NuGetCommand@2
+    versionSpec: '5.0.0'
+
+- task: NuGetCommand@2
   inputs:
-    command:'restore'
-    restoreSolution:'**/*.sln'
-    feedsToUse:'select'
-    vstsFeed:'a8bbf422-cfcb-472f-a927-5800276c0db3'
+    command: 'restore'
+    restoreSolution: '**/*.sln'
+    feedsToUse: 'select'
+
+- task: VSBuild@1
+  inputs:
+    solution: '**\*.sln'
+    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(Build.ArtifactStagingDirectory)\\"'
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    clean: true
+    msbuildArchitecture: 'x64'
+    createLogFile: true
+    logFileVerbosity: 'detailed'
+
+- task: VSTest@2
+  inputs:
+    testSelector: 'testAssemblies'
+    testAssemblyVer2: |
+      **\$(BuildConfiguration)\*unittest*.dll
+      !**\obj\**
+    searchFolder: '$(System.DefaultWorkingDirectory)'
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+
+- task: PublishSymbols@2
+  displayName: 'Publish symbols path'
+  inputs:
+    PublishSymbols: false
+  continueOnError: true
+
+- task: CopyFiles@2
+  displayName: 'Copy Functional Test files'
+  inputs:
+    SourceFolder: '$(agent.builddirectory)'
+    Contents: |
+     **\*.runsettings
+     **\*FunctionalTest*\**\bin\$(BuildConfiguration)\**
+    TargetFolder: '$(Build.ArtifactStagingDirectory)\FunctionalTests'
+    CleanTargetFolder: true
+    OverWrite: true
+    flattenFolders: true
+    preserveTimestamp: true
+
+- task: CopyFiles@2
+  displayName: 'Copy Files ARM Template'
+  inputs:
+    SourceFolder: ArmTemplates
+    Contents: '*.json'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/ArmTemplates'
+    OverWrite: true
+    flattenFolders: true
+    preserveTimestamp: true
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: drop'
